@@ -1,7 +1,7 @@
 import os
 import glob 
 
-SAMPLE,=glob_wildcards("RawReads/{sample}.fastq.gz")
+SAMPLE,=glob_wildcards("../resources/Fastq/{sample}.fastq.gz")
 
 rule all: 
     input: 
@@ -16,22 +16,23 @@ rule all:
 
 rule fastqc_rawreads: 
     input: 
-        rawread="RawReads/{sample}.fastq.gz"
+        rawread="../resources/Data/Fastq/{sample}.fastq.gz"
     output: 
-        zip="RawQC/{sample}_fastqc.zip",
-        html="RawQC/{sample}_fastqc.html"
+        zip="../resources/QCRawReads/{sample}_fastqc.zip",
+        html="../resources/QCRawReads/{sample}_fastqc.html"
     conda:
         "envs/fastqc_env.yaml"
-    log: "logs/fastqc_{sample}.log"
+    log: 
+        "logs/fastqc_{sample}.log"
     threads:
-        1
+        4
     params:
-        path="RawQC"
+        path="../resources/QCRawReads/"
     shell:
         """
         fastqc  {input.rawread} \
                 --threads {threads} \
-                -o {params.path}  > {log} 2>&1 
+                -o {params.path}  > {log} 2>&1
         """ 
 
 #rule chopper_run: 
