@@ -35,6 +35,10 @@ rule fastqc_rawreads:
                 -o {params.path}  > {log} 2>&1
         """ 
 
+rule multiqc_rawreads:
+    input: 
+    fastqc_reports=""
+
 #rule chopper_run: 
 #    input:
 #        rawread="RawReads/{sample}.fastq.gz"
