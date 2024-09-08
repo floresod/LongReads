@@ -4,32 +4,33 @@ import glob
 SAMPLE,=glob_wildcards("../resources/Fastq/{sample}.fastq.gz")
 
 rule all: 
-    input: 
-        expand("RawQC/{sample}_fastqc.{extension}", sample=SAMPLE, extension=["html", "zip"]), 
-#        expand("FilteredReads/{sample}.fastq.gz", sample=SAMPLE),
-#        expand("FilteredQC/{sample}_fastqc.{extension}", sample=SAMPLE, extension=["html","zip"]),
-        expand("Kraken_report/{sample}.txt", sample=SAMPLE), 
-        expand("Bracken_report/{sample}.txt", sample=SAMPLE),
-        expand("Contigs/flye/{sample}/assembly.fasta", sample=SAMPLE), 
-        expand("Kraken_contigs/{sample}.txt", sample=SAMPLE), 
-        expand("Kraken_contigs_out/{sample}.txt", sample=SAMPLE)
+    input:
+         "../results/multiqc_report_RawReads.html" 
+#        expand("Kraken_report/{sample}.txt", sample=SAMPLE), 
+#        expand("Bracken_report/{sample}.txt", sample=SAMPLE),
+#        expand("Contigs/flye/{sample}/assembly.fasta", sample=SAMPLE), 
+#        expand("Kraken_contigs/{sample}.txt", sample=SAMPLE), 
+#        expand("Kraken_contigs_out/{sample}.txt", sample=SAMPLE)
 
 rule fastqc_rawreads: 
     input: 
         rawread="../resources/Data/Fastq/{sample}.fastq.gz"
     output: 
-        zip="../resources/QCRawReads/{sample}_fastqc.zip",
-        html="../resources/QCRawReads/{sample}_fastqc.html"
+        zip="../resources/Outputs/fastqc_rawreads/{sample}.zip",
+        html="../resources/Outputs/fastqc_rawreads/{sample}.html"
     conda:
-        "envs/fastqc_env.yaml"
+        "../envs/fastqc_env.yaml"
     log: 
-        "logs/fastqc_{sample}.log"
+        "../resources/Logs/fastqc_rawreads/{sample}.log"
     threads:
         4
     params:
-        path="../resources/QCRawReads/"
+        path="../resources/Outputs/fastqc_rawreads/"
     shell:
         """
+        mkdir -p {params.path}
+        mkdir -p ../resources/Logs/fastqc_rawreads
+
         fastqc  {input.rawread} \
                 --threads {threads} \
                 -o {params.path}  > {log} 2>&1
@@ -37,38 +38,20 @@ rule fastqc_rawreads:
 
 rule multiqc_rawreads:
     input: 
-    fastqc_reports=""
+        expand("../resources/Outputs/fastqc_rawreads/{sample}.html", sample=SAMPLE)
 
-#rule chopper_run: 
-#    input:
-#        rawread="RawReads/{sample}.fastq.gz"
-#    output:
-#        FilteredRead="FilteredReads/{sample}.fastq.gz"
-#    params:
-#        threads=5
-#    shell: 
-#        """
-#        gunzip -c {input.rawread} | \
-#        chopper -q 10 -l 100 --tailcrop 10 --threads {params.threads} | \
-#        gzip > {output.FilteredRead}
-#        """ 
+    output: 
+        "../results/multiqc_report_RawReads.html" 
+    log: 
+        "../resources/Logs/multiqc_rawreads/multiqc_rawreads.log"
+    conda:
+        "../envs/fastqc_env.yaml"
+    shell:
+        """
+        mkdir -p ../resources/Logs/multiqc_rawreads
 
-#rule fastqc_filtered: 
-#    input:
-#        FilteredRead="FilteredReads/{sample}.fastq.gz"
-#    output:
-#        zip="FilteredQC/{sample}_fastqc.zip",
-#        html="FilteredQC/{sample}_fastqc.html"
-#    
-#    params:
-#        path="FilteredQC"
-#    threads:
-#        5
-#        
-#    shell: 
-#        """
-#        fastqc {input.FilteredRead} --threads {threads} -o {params.path} 
- #       """
+        multiqc {input} -o {output} > {log} 2>&1
+        """
 
 rule kraken2_run: 
     input: 
