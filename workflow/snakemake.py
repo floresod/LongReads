@@ -55,7 +55,7 @@ rule multiqc_rawreads:
 
 rule kraken2_run: 
     input: 
-        rawread="RawReads/{sample}.fastq.gz"
+        rawread="../resources/Data/Fastq/{sample}.fastq.gz"
     params:
         database="../../Databases/k2_standard_08gb_20240605",
         threads=5
