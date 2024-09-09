@@ -5,7 +5,8 @@ SAMPLE,=glob_wildcards("../resources/Fastq/{sample}.fastq.gz")
 
 rule all: 
     input:
-         "../results/multiqc_report_RawReads.html" 
+        "../results/multiqc_report_RawReads.html",
+        expand()
 #        expand("Kraken_report/{sample}.txt", sample=SAMPLE), 
 #        expand("Bracken_report/{sample}.txt", sample=SAMPLE),
 #        expand("Contigs/flye/{sample}/assembly.fasta", sample=SAMPLE), 
@@ -73,21 +74,22 @@ rule kraken2_run:
                 --output {output.output} \
                 --report {output.report} \
                 --threads {params.threads} \
-                --confidence 0.01 \
+                --confidence 0.005 \
                 --use-names   > {log} 2>&1 
         """
+
 rule bracken_run:
     input:
         report=rules.kraken2_run.output.report
     output:
-        report="Bracken_report/{sample}.txt"
+        report="../resources/Output/Bracken_report/{sample}.txt"
     params:
         database="../../Databases/k2_standard_08gb_20240605",
         length=100
     conda:
-        "envs/bracken_env.yaml"
+        "../envs/bracken_env.yaml"
     log:
-        "logs/bracken_{sample}.log"
+        "../resources/Logs/bracken_{sample}.log"
 
     shell:
         """
@@ -99,18 +101,18 @@ rule bracken_run:
 
 rule assembly_flye:
     input: 
-        reads = "RawReads/{sample}.fastq.gz"
+        reads = "../resources/Data/Fastq/{sample}.fastq.gz"
     output:
-        contigs = "Contigs/flye/{sample}/assembly.fasta" 
+        contigs = "../resources/Outputs/flye/{sample}/assembly.fasta" 
     params:
-        outdir = "Contigs/flye/{sample}",
-        genome_size = "5g"
+        outdir = "../resources/Outputs/flye/{sample}",
+        genome_size = "2g"
     threads:
         5
     conda:
-        "envs/flye_env.yaml"
+        "../envs/flye_env.yaml"
     log: 
-        "logs/flye_{sample}.log"
+        "../resources/Logs/flye_{sample}.log"
     shell: 
         """
         mkdir -p {params.outdir}
@@ -128,12 +130,12 @@ rule Kraken2_contigs:
         database="../../Databases/k2_standard_08gb_20240605",
         threads=5
     output:
-        report="Kraken_contigs/{sample}.txt",
-        output="Kraken_contigs_out/{sample}.txt"
+        report="../results/Kraken_contigs/{sample}.txt",
+        output="../results/Kraken_contigs_out/{sample}.txt"
     conda:
-        "envs/kraken2_env.yaml"
+        "../envs/kraken2_env.yaml"
     log:
-        "logs/kraken2_Contigs_{sample}.log"
+        "../resources/Logs/kraken2_Contigs_{sample}.log"
     shell:
         """
         kraken2 --db {params.database} {input.contigs} \
