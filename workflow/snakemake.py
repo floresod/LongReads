@@ -60,12 +60,12 @@ rule kraken2_run:
         database="../../Databases/k2_standard_08gb_20240605",
         threads=5
     output:
-        output="Kraken_output/{sample}.txt",
-        report="Kraken_report/{sample}.txt" 
+        output="../resources/Outputs/Kraken_output/{sample}.txt",
+        report="../resources/Outputs/Kraken_report/{sample}.txt" 
     conda:
-        "envs/kraken2_env.yaml"
+        "../envs/kraken2_env.yaml"
     log:
-        "logs/kraken2_{sample}.log"
+        "../resources/Logs/kraken2_{sample}.log"
     shell:
         """
         kraken2 --db {params.database} \

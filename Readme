@@ -1,5 +1,0 @@
-This Workflow will include multiple steps to analyze long-reads from nanopore sequencing. Hopefully with the right format.
-
-I am currently working on rule 1, fastqc + multiqc. Need to add multiqc code. 
-
-
