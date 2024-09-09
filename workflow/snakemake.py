@@ -5,8 +5,9 @@ SAMPLE,=glob_wildcards("../resources/Fastq/{sample}.fastq.gz")
 
 rule all: 
     input:
-        "../results/multiqc_report_RawReads.html",
-        expand()
+        expand("../resources/Outputs/fastqc_rawreads/{sample}.html", sample=SAMPLE),
+        "../results/multiqc_report_RawReads.html"
+#        expand()
 #        expand("Kraken_report/{sample}.txt", sample=SAMPLE), 
 #        expand("Bracken_report/{sample}.txt", sample=SAMPLE),
 #        expand("Contigs/flye/{sample}/assembly.fasta", sample=SAMPLE), 
@@ -50,7 +51,7 @@ rule multiqc_rawreads:
     shell:
         """
         mkdir -p ../resources/Logs/multiqc_rawreads
-
+        mkdir -p ../results
         multiqc {input} -o {output} > {log} 2>&1
         """
 
