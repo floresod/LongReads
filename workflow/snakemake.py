@@ -1,11 +1,11 @@
 import os
 import glob 
 
-SAMPLE,=glob_wildcards("../resources/Data/Fastq/{sample}.fastq.gz")
+SAMPLE,=glob_wildcards("../resources/Data/Fastq/{sample}.fastq")
 
 rule all: 
     input:
-        expand("../resources/Outputs/fastqc_rawreads/{sample}.html", sample=SAMPLE),
+        expand("../resources/Outputs/fastqc_rawreads/{sample}_fastqc.html", sample=SAMPLE),
         "../results/multiqc_report_RawReads.html"
 #        expand("Kraken_report/{sample}.txt", sample=SAMPLE), 
 #        expand("Bracken_report/{sample}.txt", sample=SAMPLE),
@@ -15,9 +15,9 @@ rule all:
 
 rule fastqc_rawreads: 
     input: 
-        rawread="../resources/Data/Fastq/{sample}.fastq.gz"
+        rawread="../resources/Data/Fastq/{sample}.fastq"
     output: 
-        html="../resources/Outputs/fastqc_rawreads/{sample}.html"
+        html="../resources/Outputs/fastqc_rawreads/{sample}_fastqc.html"
     conda:
         "../envs/fastqc_env.yaml"
     log: 
@@ -35,7 +35,7 @@ rule fastqc_rawreads:
 
 rule multiqc_rawreads:
     input: 
-        expand("../resources/Outputs/fastqc_rawreads/{sample}.html", sample=SAMPLE)
+        expand("../resources/Outputs/fastqc_rawreads/{sample}_fastqc.html", sample=SAMPLE)
     output: 
         "../results/multiqc_report_RawReads.html" 
     log: 
@@ -51,7 +51,7 @@ rule multiqc_rawreads:
 
 rule kraken2_run: 
     input: 
-        rawread="../resources/Data/Fastq/{sample}.fastq.gz"
+        rawread="../resources/Data/Fastq/{sample}.fastq"
     params:
         database="../../Databases/k2_standard_08gb_20240605",
         threads=5
@@ -65,7 +65,7 @@ rule kraken2_run:
     shell:
         """
         kraken2 --db {params.database} \
-                --gzip-compressed {input.rawread} \
+                {input.rawread} \
                 --output {output.output} \
                 --report {output.report} \
                 --threads {params.threads} \
