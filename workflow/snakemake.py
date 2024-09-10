@@ -1,13 +1,12 @@
 import os
 import glob 
 
-SAMPLE,=glob_wildcards("../resources/Fastq/{sample}.fastq.gz")
+SAMPLE,=glob_wildcards("../resources/Data/Fastq/{sample}.fastq.gz")
 
 rule all: 
     input:
         expand("../resources/Outputs/fastqc_rawreads/{sample}.html", sample=SAMPLE),
         "../results/multiqc_report_RawReads.html"
-#        expand()
 #        expand("Kraken_report/{sample}.txt", sample=SAMPLE), 
 #        expand("Bracken_report/{sample}.txt", sample=SAMPLE),
 #        expand("Contigs/flye/{sample}/assembly.fasta", sample=SAMPLE), 
@@ -18,7 +17,6 @@ rule fastqc_rawreads:
     input: 
         rawread="../resources/Data/Fastq/{sample}.fastq.gz"
     output: 
-        zip="../resources/Outputs/fastqc_rawreads/{sample}.zip",
         html="../resources/Outputs/fastqc_rawreads/{sample}.html"
     conda:
         "../envs/fastqc_env.yaml"
@@ -30,9 +28,6 @@ rule fastqc_rawreads:
         path="../resources/Outputs/fastqc_rawreads/"
     shell:
         """
-        mkdir -p {params.path}
-        mkdir -p ../resources/Logs/fastqc_rawreads
-
         fastqc  {input.rawread} \
                 --threads {threads} \
                 -o {params.path}  > {log} 2>&1
@@ -41,7 +36,6 @@ rule fastqc_rawreads:
 rule multiqc_rawreads:
     input: 
         expand("../resources/Outputs/fastqc_rawreads/{sample}.html", sample=SAMPLE)
-
     output: 
         "../results/multiqc_report_RawReads.html" 
     log: 
@@ -52,7 +46,7 @@ rule multiqc_rawreads:
         """
         mkdir -p ../resources/Logs/multiqc_rawreads
         mkdir -p ../results
-        multiqc {input} -o {output} > {log} 2>&1
+        multiqc ../resources/Outputs/fastqc_rawreads/ -o {output} > {log} 2>&1
         """
 
 rule kraken2_run: 
