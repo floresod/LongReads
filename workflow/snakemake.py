@@ -54,7 +54,8 @@ rule kraken2_rr:
     input:
         rawread="../resources/Data/Fastq/{sample}.fastq"
     output:
-        report="../results/kraken2_rr/{sample}.txt"
+        report="../results/kraken2_rr/{sample}.txt", 
+        output="../resources/Outputs/kraken2_rr/{sample}.txt"
     params:
         database="../../../Databases/k2_standard_08gb_20240605", 
         threads="6"
@@ -67,6 +68,7 @@ rule kraken2_rr:
         kraken2 --db {params.database} \
                 {input.rawread} \
                 --report {output.report} \
+                --output {output.output} \
                 --threads {threads} \
                 --confidence 0.005 \
                 --use-names > {log} 2>&1
