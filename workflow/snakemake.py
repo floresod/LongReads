@@ -8,7 +8,8 @@ rule all:
         expand("../resources/Outputs/fastqc_rawreads/{sample}_fastqc.html", sample=SAMPLE), 
 #        "../results/multiqc_rawreads/multiqc_report.html"
         expand("../results/kraken2_rr/{sample}.txt", sample=SAMPLE),
-        expand("../results/bracken/{sample}.txt", sample=SAMPLE)
+        expand("../results/bracken/{sample}.txt", sample=SAMPLE),
+        expand("../resources/Outputs/flye/{sample}/assembly.fasta", sample=SAMPLE)
 
 rule fastqc_rawreads:
     input:
@@ -94,7 +95,29 @@ rule bracken_rr:
                 -r {params.length} > {log} 2>&1
         """
 
-
+rule assembly_flye:
+    input: 
+        reads = "../resources/Data/Fastq/{sample}.fastq"
+    output:
+        contigs = "../resources/Outputs/flye/{sample}/assembly.fasta" 
+    params:
+        outdir = "../resources/Outputs/flye/{sample}",
+        genome_size = "2g"
+    threads:
+        6
+    conda:
+        "../envs/flye_env.yaml"
+    log: 
+        "../resources/Logs/flye/{sample}.log"
+    shell: 
+        """
+        mkdir -p {params.outdir}
+        flye    --nano-raw {input.reads} \
+                --out-dir {params.outdir} \
+                --genome-size {params.genome_size}\
+                --threads {threads}\
+                --meta  > {log} 2>&1
+        """
 
 
 

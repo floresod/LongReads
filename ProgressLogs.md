@@ -6,6 +6,8 @@ This Workflow will include multiple steps to analyze long-reads from nanopore se
 
 2024-Sep-09: Corrected the code as it was failing to run multiqc before fastqc. The problema was a bad reference to the samples when defining the wildcard SAMPLE. 
 
-2024-Sep-10: Found that the problem was that the fastqc.gz files were not compressed, they were actually fastqc only. Changing the name fixed the problem. 
+2024-Sep-10: Found that the problem was that the fastqc.gz files were not compressed, they were actually fastqc only. Changing the name fixed the problem. There is a problem with multiqc. I will leave it out for now. **Need to correct this in the future**
+
+2024-Sep-11: Added Kraken2, Bracken, and Flye code to the snakemake file. It works well and produces the contigs. 
 
 
