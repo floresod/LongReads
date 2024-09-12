@@ -9,7 +9,8 @@ rule all:
 #        "../results/multiqc_rawreads/multiqc_report.html"
         expand("../results/kraken2_rr/{sample}.txt", sample=SAMPLE),
         expand("../results/bracken/{sample}.txt", sample=SAMPLE),
-        expand("../resources/Outputs/flye/{sample}/assembly.fasta", sample=SAMPLE)
+        expand("../resources/Outputs/flye/{sample}/assembly.fasta", sample=SAMPLE),
+        expand("../resources/Outputs/medaka/{sample}/consensus.fasta", sample=SAMPLE)
 
 rule fastqc_rawreads:
     input:
@@ -119,7 +120,28 @@ rule assembly_flye:
                 --meta  > {log} 2>&1
         """
 
-
+rule polish_medaka:
+    input:
+        assembly="../resources/Outputs/flye/{sample}/assembly.fasta",
+        basecall="../resources/Data/Fastq/{sample}.fastq"
+    output:
+        "../resources/Outputs/medaka/{sample}/consensus.fasta"
+    params:
+        outdir="../resources/Outputs/medaka/{sample}"
+    threads: 
+        6
+    log:
+        "../resources/Logs/medaka/{sample}.log"
+    conda:
+        "../envs/medaka_env.yaml"
+    shell:
+        """
+        medaka_consensus -i {input.basecall} \
+                         -d {input.assembly} \
+                         -o {params.outdir} \
+                         -t {threads} > {log} 2>&1
+        """
+    
 
 
 

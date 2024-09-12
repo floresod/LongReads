@@ -10,4 +10,4 @@ This Workflow will include multiple steps to analyze long-reads from nanopore se
 
 2024-Sep-11: Added Kraken2, Bracken, and Flye code to the snakemake file. It works well and produces the contigs. 
 
-
+2024-Sep-12: Added the Medaka code. It works and generates the consensus assemblies.
