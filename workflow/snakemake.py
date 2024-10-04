@@ -6,11 +6,11 @@ SAMPLE,=glob_wildcards("../resources/Data/Fastq/{sample}.fastq")
 rule all:
     input:
         expand("../resources/Outputs/fastqc_rawreads/{sample}_fastqc.html", sample=SAMPLE), 
-#        "../results/multiqc_rawreads/multiqc_report.html"
         expand("../results/kraken2_rr/{sample}.txt", sample=SAMPLE),
         expand("../results/bracken/{sample}.txt", sample=SAMPLE),
         expand("../resources/Outputs/flye/{sample}/assembly.fasta", sample=SAMPLE),
-        expand("../resources/Outputs/medaka/{sample}/consensus.fasta", sample=SAMPLE)
+        expand("../resources/Outputs/medaka/{sample}/consensus.fasta", sample=SAMPLE), 
+        expand("../results/FinalContigs/{sample}.fasta", sample = SAMPLE)
 
 rule fastqc_rawreads:
     input:
@@ -33,24 +33,6 @@ rule fastqc_rawreads:
                 --memory {params.memory} \
                 -o {params.path} > {log} 2>&1
         """
-
-#rule multiqc_rawreads:
-#    input: 
-#        expand("../resources/Outputs/fastqc_rawreads/{sample}_fastqc.html", sample=SAMPLE)
-#    output:
-#        directory("../results/multiqc_rawreads/"),
-#        report="../results/multiqc_rawreads/multiqc_report.html"
-#    params:
-#        path="../results/multiqc_rawreads/"
-#    log:    
-#        "../resources/Logs/multiqc_rawreads/multiqc_rawreads.log"
-#    conda:
-#        "../envs/fastqc_env.yaml"
-#    shell:
-#        """
-#        mkdir -p ../results/multiqc_rawreads
-#        multiqc {input} -o {params.path} --filename {output.report}  > {log} 2>&1
-#        """
 
 rule kraken2_rr:
     input:
@@ -142,6 +124,16 @@ rule polish_medaka:
                          -t {threads} > {log} 2>&1
         """
     
-
+rule gathering_contigs:
+    input:
+        "../resources/Outputs/medaka/{sample}/consensus.fasta"
+    output:
+        "../results/FinalContigs/{sample}.fasta"
+    log:
+        "../resources/Logs/move_contigs/{sample}.log"
+    shell: 
+        """
+        cp {input} {output}
+        """
 
 
