@@ -14,25 +14,20 @@ rule all:
 
 rule fastqc_rawreads:
     input:
-        rawread="../resources/Data/Fastq/{sample}.fastq"
+        "../resources/Data/Fastq/{sample}.fastq"
     output:
-        html="../resources/Outputs/fastqc_rawreads/{sample}_fastqc.html"
+        html="../resources/Outputs/fastqc_rawreads/{sample}_fastqc.html",
+        zip="../resources/Outputs/fastqc_rawreads/{sample}_fastqc.zip"
     params:
-        path="../resources/Outputs/fastqc_rawreads/", 
-        memory=4000
+        exra="--quiet"
     log:
         "../resources/Logs/fastqc_rawreads/{sample}.log"
     threads:
         4
-    conda:
-        "../envs/fastqc_env.yaml"
-    shell:
-        """
-        fastqc  {input.rawread} \
-                --threads {threads} \
-                --memory {params.memory} \
-                -o {params.path} > {log} 2>&1
-        """
+    resources:
+        mem_mb=4000
+    wrapper:
+        "v4.6.0/bio/fastqc"
 
 rule kraken2_rr:
     input:
@@ -135,5 +130,7 @@ rule gathering_contigs:
         """
         cp {input} {output}
         """
-
+rule checkm2: 
+    input: 
+        
 
