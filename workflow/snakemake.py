@@ -10,7 +10,8 @@ rule all:
         expand("../results/bracken/{sample}.txt", sample=SAMPLE),
         expand("../resources/Outputs/flye/{sample}/assembly.fasta", sample=SAMPLE),
         expand("../resources/Outputs/medaka/{sample}/consensus.fasta", sample=SAMPLE), 
-        expand("../results/FinalContigs/{sample}.fasta", sample = SAMPLE)
+        expand("../results/FinalContigs/{sample}.fasta", sample = SAMPLE),
+        expand("../results/checkm2/{sample}.tsv", sample=SAMPLE)
 
 rule fastqc_rawreads:
     input:
@@ -132,5 +133,29 @@ rule gathering_contigs:
         """
 rule checkm2: 
     input: 
+       contigs="../results/FinalContigs/{sample}.fasta"
+    output:
+        dir_report=directory("../resources/Outputs/checkm2/{sample}"),
+        report="../results/checkm2/{sample}.tsv"
+    log:
+        "../resources/Logs/checkm2/{sample}.log"
+    resources:
+        threads=4
+    conda:
+        "../envs/checkm2_env.yaml"
+    shell:
+        """
+        rm -rf {output.dir_report}
+
+        checkm2 predict --input {input.contigs} \
+                        --output-directory {output.dir_report} \
+                        --force \
+                        --threads {resources.threads} > {log} 2>&1
+        
+        mkdir -p "../results/checkm2"
+        cp ../resources/Outputs/checkm2/{wildcards.sample}/quality_report.tsv \
+            {output.report}
+        """
+
         
 
