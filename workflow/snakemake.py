@@ -11,7 +11,8 @@ rule all:
         expand("../resources/Outputs/flye/{sample}/assembly.fasta", sample=SAMPLE),
         expand("../resources/Outputs/medaka/{sample}/consensus.fasta", sample=SAMPLE), 
         expand("../results/FinalContigs/{sample}.fasta", sample = SAMPLE),
-        expand("../results/checkm2/{sample}.tsv", sample=SAMPLE)
+        expand("../results/checkm2/{sample}.tsv", sample=SAMPLE),
+        checkm_report="../results/checkm2/checkm2_report.tsv"
 
 rule fastqc_rawreads:
     input:
@@ -117,6 +118,7 @@ rule polish_medaka:
         medaka_consensus -i {input.basecall} \
                          -d {input.assembly} \
                          -o {params.outdir} \
+                         --bacteria \
                          -t {threads} > {log} 2>&1
         """
     
@@ -156,6 +158,21 @@ rule checkm2:
         cp ../resources/Outputs/checkm2/{wildcards.sample}/quality_report.tsv \
             {output.report}
         """
-
         
+rule combine_cm2reports:
+    input:
+        tsv = expand("../results/checkm2/{sample}.tsv", sample=SAMPLE)
+    output:
+        comb_report="../results/checkm2/checkm2_report.tsv"
+    log:
+        "../resources/Logs/combined_cmreport/log.log"
+    shell:
+        """
+         # Write the header from the first file to the combined file
+        head -n 1 {input.tsv[0]} > {output.comb_report}
 
+        # Append the content of each TSV, skipping the header in subsequent files
+        for tsv in {input.tsv}; do
+            tail -n +2 $tsv >> {output.comb_report}
+       done
+        """
