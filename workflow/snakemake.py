@@ -1,5 +1,5 @@
 import glob
-import os 
+#import os 
 
 SAMPLE,=glob_wildcards("../resources/Data/Fastq/{sample}.fastq")
 
@@ -11,8 +11,11 @@ rule all:
         expand("../resources/Outputs/flye/{sample}/assembly.fasta", sample=SAMPLE),
         expand("../resources/Outputs/medaka/{sample}/consensus.fasta", sample=SAMPLE), 
         expand("../results/FinalContigs/{sample}.fasta", sample = SAMPLE),
-        expand("../results/checkm2/{sample}.tsv", sample=SAMPLE),
-        checkm_report="../results/checkm2/checkm2_report.tsv"
+        #expand("../results/checkm2/{sample}.tsv", sample=SAMPLE),
+        expand("../resources/Outputs/gtdbtk/{sample}/", sample=SAMPLE),
+        "../results/checkm2/checkm2_report.tsv"
+
+
 
 rule fastqc_rawreads:
     input:
@@ -176,3 +179,33 @@ rule combine_cm2reports:
             tail -n +2 $tsv >> {output.comb_report}
        done
         """
+
+rule gtdbtk_classify:
+    input:
+        contigs = "../resources/Outputs/medaka/{sample}"
+    output:
+        report_dir = directory("../resources/Outputs/gtdbtk/{sample}")
+        #combined_report = "../results/ClassifiedContigs/gtdbtk_all_reports.tsv"
+    log:
+        "../resources/Logs/gtdbtk/{sample}.log"
+    resources:
+        threads = 30
+    conda:
+        "../envs/gtdbtk_env.yaml"
+    shell:
+        """
+        gtdbtk classify_wf  --genome_dir {input.contigs} \
+                            --out_dir {output.report_dir} \
+                            --skip_ani_screen \
+                            -x fasta \
+                            --cpus {resources.threads} \
+                            --pplacer_cpus {resources.threads} > {log} 2>&1
+        """
+
+
+
+
+
+
+
+

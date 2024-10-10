@@ -15,3 +15,5 @@ This Workflow will include multiple steps to analyze long-reads from nanopore se
 2024-Oct-04: Added code to move contigs generated with medaka to results/FinalContigs. 
 
 2024-Oct-07: Added and tested checkm2 code. 
+
+2024-Oct-10: Added gtdbtk code, no tested yet
