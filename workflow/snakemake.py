@@ -1,8 +1,23 @@
+##################################
+###### LONG READS ANALYSES #######
+##################################
+
+
+################################
+#### Loado python libraries ####
+################################
 import glob
 #import os 
 
+
+##########################
+#### Global Variables ####
+##########################
 SAMPLE,=glob_wildcards("../resources/Data/Fastq/{sample}.fastq")
 
+########################
+#### Global outputs ####
+########################
 rule all:
     input:
         expand("../resources/Outputs/fastqc_rawreads/{sample}_fastqc.html", sample=SAMPLE), 
@@ -16,7 +31,9 @@ rule all:
         "../results/checkm2/checkm2_report.tsv"
 
 
-
+###################################
+#### Quality Control Raw Reads ####
+###################################
 rule fastqc_rawreads:
     input:
         "../resources/Data/Fastq/{sample}.fastq"
@@ -34,6 +51,9 @@ rule fastqc_rawreads:
     wrapper:
         "v4.6.0/bio/fastqc"
 
+#########################################
+#### Taxonomic Classificationi Reads ####
+#########################################
 rule kraken2_rr:
     input:
         rawread="../resources/Data/Fastq/{sample}.fastq"
@@ -78,6 +98,9 @@ rule bracken_rr:
                 -r {params.length} > {log} 2>&1
         """
 
+##################
+#### Assembly ####
+##################
 rule assembly_flye:
     input: 
         reads = "../resources/Data/Fastq/{sample}.fastq"
@@ -136,6 +159,10 @@ rule gathering_contigs:
         """
         cp {input} {output}
         """
+
+#########################
+#### Quality Contigs ####
+#########################
 rule checkm2: 
     input: 
        contigs="../results/FinalContigs/{sample}.fasta"
@@ -180,6 +207,9 @@ rule combine_cm2reports:
        done
         """
 
+##########################################
+#### Taxonomic Classification Contigs ####
+##########################################
 rule gtdbtk_classify:
     input:
         contigs = "../resources/Outputs/medaka/{sample}"
