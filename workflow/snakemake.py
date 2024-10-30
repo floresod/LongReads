@@ -27,9 +27,9 @@ rule all:
         expand("../resources/Outputs/medaka/{sample}/consensus.fasta", sample=SAMPLE), 
         expand("../results/FinalContigs/{sample}.fasta", sample = SAMPLE),
         #expand("../results/checkm2/{sample}.tsv", sample=SAMPLE),
-        expand("../resources/Outputs/gtdbtk/{sample}/", sample=SAMPLE),
-        "../results/checkm2/checkm2_report.tsv"
-
+       # expand("../resources/Outputs/gtdbtk/{sample}/", sample=SAMPLE),
+        "../results/checkm2/checkm2_report.tsv",
+        expand("../results/card/{sample}.tsv", sample=SAMPLE)
 
 ###################################
 #### Quality Control Raw Reads ####
@@ -232,7 +232,25 @@ rule gtdbtk_classify:
                             --pplacer_cpus {resources.threads} > {log} 2>&1
         """
 
-
+#######################
+#### CARD Aligment ####
+#######################
+rule diamond_card:
+    input:
+        contigs="../resources/Outputs/medaka/{sample}/consensus.fasta",
+        database="../../../Databases/card/card_v3.3.0.dmnd"
+    output:
+        "../results/card/{sample}.tsv"
+    log:
+        "../resources/Logs/card/{sample}.log"
+    conda:
+        "../envs/diamond_env.yaml"
+    shell:
+        """
+        diamond blastx -d {input.database} -q {input.contigs} \
+                -o {output} --id 95 --subject-cover 90 \
+                --ultra-sensitive
+        """
 
 
 
