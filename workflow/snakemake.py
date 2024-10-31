@@ -29,7 +29,8 @@ rule all:
         #expand("../results/checkm2/{sample}.tsv", sample=SAMPLE),
        # expand("../resources/Outputs/gtdbtk/{sample}/", sample=SAMPLE),
         "../results/checkm2/checkm2_report.tsv",
-        expand("../results/card/{sample}.tsv", sample=SAMPLE)
+        expand("../results/card/{sample}.tsv", sample=SAMPLE),
+        expand("../results/mobileOG/{sample}.tsv", sample=SAMPLE)
 
 ###################################
 #### Quality Control Raw Reads ####
@@ -249,11 +250,26 @@ rule diamond_card:
         """
         diamond blastx -d {input.database} -q {input.contigs} \
                 -o {output} --id 95 --subject-cover 90 \
-                --ultra-sensitive
+                --ultra-sensitive > {log} 2>&1
         """
 
-
-
-
-
+##########################
+#### MobileOG Aligment ###
+##########################
+rule diamond_mobileOG:
+    input:
+        contigs="../resources/Outputs/medaka/{sample}/consensus.fasta",
+        database="../../../Databases/mobileOG/mobileOG.dmnd"
+    output:
+        "../results/mobileOG/{sample}.tsv"
+    log:
+        "../resources/Logs/mobileOG/{sample}.log"
+    conda:
+        "../envs/diamond_env.yaml"
+    shell:
+        """
+        diamond blastx -d {input.database} -q {input.contigs} \
+                    -o {output} --id 95 --subject-cover 95 \
+                    --ultra-sensitive > {log} 2>&1
+        """
 
