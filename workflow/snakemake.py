@@ -22,15 +22,16 @@ rule all:
     input:
         expand("../resources/Outputs/fastqc_rawreads/{sample}_fastqc.html", sample=SAMPLE), 
         expand("../results/kraken2_rr/{sample}.txt", sample=SAMPLE),
-        expand("../results/bracken/{sample}.txt", sample=SAMPLE),
+        #expand("../results/bracken/{sample}.txt", sample=SAMPLE),
         expand("../resources/Outputs/flye/{sample}/assembly.fasta", sample=SAMPLE),
         expand("../resources/Outputs/medaka/{sample}/consensus.fasta", sample=SAMPLE), 
         expand("../results/FinalContigs/{sample}.fasta", sample = SAMPLE),
         #expand("../results/checkm2/{sample}.tsv", sample=SAMPLE),
        # expand("../resources/Outputs/gtdbtk/{sample}/", sample=SAMPLE),
         "../results/checkm2/checkm2_report.tsv",
-        expand("../results/card/{sample}.tsv", sample=SAMPLE),
-        expand("../results/mobileOG/{sample}.tsv", sample=SAMPLE)
+        #expand("../results/card/{sample}.tsv", sample=SAMPLE),
+       # expand("../results/mobileOG/{sample}.tsv", sample=SAMPLE),
+        expand("../results/kraken2_contigs/{sample}_output.tsv", sample=SAMPLE)
 
 ###################################
 #### Quality Control Raw Reads ####
@@ -62,7 +63,7 @@ rule kraken2_rr:
         report="../results/kraken2_rr/{sample}.txt", 
         output="../resources/Outputs/kraken2_rr/{sample}.txt"
     params:
-        database="../../../Databases/k2_standard_08gb_20240605", 
+        database="../../../Databases/k2_standard_08gb_20240904", 
         threads="6"
     log:
         "../resources/Logs/kraken2_rawreads/{sample}.log"
@@ -272,4 +273,35 @@ rule diamond_mobileOG:
                     -o {output} --id 95 --subject-cover 95 \
                     --ultra-sensitive > {log} 2>&1
         """
+
+#######################################################
+#### Taxonomic Classification of Contigs - Kraken2 ####
+#######################################################
+rule kraken2_contigs:
+    input:
+        contigs="../resources/Outputs/medaka/{sample}/consensus.fasta"
+    output:
+        report="../resources/Outputs/kraken2_contigs/{sample}_report", 
+        output="../results/kraken2_contigs/{sample}_output.tsv"
+    params:
+        database="../../../Databases/k2_standard_08gb_20240904", 
+        threads="6"
+    log:
+        "../resources/Logs/kraken2_contigs/{sample}.log"
+    conda: 
+        "../envs/kraken2_env.yaml"
+    shell:
+        """
+        kraken2 --db {params.database} \
+                {input.contigs} \
+                --report {output.report} \
+                --report-minimizer-data \
+                --output {output.output} \
+                --threads {threads} \
+                --confidence 0.0005 \
+                --use-names > {log} 2>&1
+        """
+
+ 
+
 
