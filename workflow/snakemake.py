@@ -31,10 +31,11 @@ rule all:
         "../results/checkm2/checkm2_report.tsv",
         #expand("../results/card/{sample}.tsv", sample=SAMPLE),
        # expand("../results/mobileOG/{sample}.tsv", sample=SAMPLE),
-        expand("../results/kraken2_contigs/{sample}_output.tsv", sample=SAMPLE)
+       # expand("../results/kraken2_contigs/{sample}_output.tsv", sample=SAMPLE),
+        expand("../results/kraken2_contigs/{sample}.tsv", sample=SAMPLE)
 
 ###################################
-#### Quality Control Raw Reads ####
+#### QQuality Control Raw Reads ####
 ###################################
 rule fastqc_rawreads:
     input:
@@ -282,9 +283,9 @@ rule kraken2_contigs:
         contigs="../resources/Outputs/medaka/{sample}/consensus.fasta"
     output:
         report="../resources/Outputs/kraken2_contigs/{sample}_report", 
-        output="../results/kraken2_contigs/{sample}_output.tsv"
+        output="../resources/Outputs/kraken2_contigs/{sample}_output.tsv"
     params:
-        database="../../../Databases/k2_standard_08gb_20240904", 
+        database="../../../Databases/k2_standard_08gb_20240605", 
         threads="6"
     log:
         "../resources/Logs/kraken2_contigs/{sample}.log"
@@ -301,6 +302,22 @@ rule kraken2_contigs:
                 --confidence 0.0005 \
                 --use-names > {log} 2>&1
         """
+rule contigs_taxa:
+    input:
+        kk2_output="../resources/Outputs/kraken2_contigs/{sample}_output.tsv"
+    output:
+        classified_contigs="../results/kraken2_contigs/{sample}.tsv"
+    log:
+        "../resources/Logs/kraken2_contig_outputs/{sample}.log"
+    shell:
+        """
+        #create directory
+        mkdir -p ../results/kraken2_contigs
+
+        cut -f 2-3 {input.kk2_output} > {output.classified_contigs}
+        """
+        
+        
 
  
 
